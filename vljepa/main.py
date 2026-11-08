@@ -352,7 +352,7 @@ def train_vljepa(model, dataset_iterator, n_epoch=2, lr=1e-4):
         print(f"Epoch {epoch+1}: Loss {total_loss/steps:.4f} ({time.perf_counter() - tic:.2f}s)")
 
 def get_overfit_batch(processor, batch_size=2):
-    car_image = Image.open(requests.get(URL, stream=True).raw)
+    car_image = Image.open(requests.get(URL, stream=True, timeout=30).raw)
     car_text = "A car"
     noise_image = Image.fromarray(np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8))
     noise_text = "Noise"
@@ -371,7 +371,7 @@ def test_sanity(model_id="google/paligemma-3b-mix-224"):
     model = PG(model_id)
     mx.eval(model.parameters())
     processor = AutoProcessor.from_pretrained(model_id)
-    raw_image = Image.open(requests.get(URL, stream=True).raw)
+    raw_image = Image.open(requests.get(URL, stream=True, timeout=30).raw)
     print(f'{raw_image=}')
     pixel_values = processor.image_processor(raw_image, return_tensors="np").pixel_values
     pixel_values = mx.array(pixel_values).transpose(0, 2, 3, 1)
@@ -406,7 +406,7 @@ def test_sanity(model_id="google/paligemma-3b-mix-224"):
         print(processor.decode([token_id]), end="", flush=True)
 
 def test_retrieval(model, processor):
-    raw_image = Image.open(requests.get(URL, stream=True).raw)
+    raw_image = Image.open(requests.get(URL, stream=True, timeout=30).raw)
     pixel_values = processor.image_processor(raw_image, return_tensors="np").pixel_values
     img = mx.array(pixel_values).transpose(0, 2, 3, 1)
     q_ids = mx.array(processor.tokenizer("Caption: What is this?", return_tensors="np").input_ids)
